@@ -25,20 +25,25 @@ import java.util.List;
 @RequestMapping("api/v1/demidovich")
 public class TaskController {
     private final TaskRepository taskRepository;
+    private final TaskService taskService;
 
     @Autowired
-    public TaskController(TaskRepository taskRepository) {
+    public TaskController(TaskRepository taskRepository, TaskService taskService) {
         this.taskRepository = taskRepository;
+        this.taskService = taskService;
     }
+
 
     @GetMapping
     public List<Task> findAll(
+            @RequestParam(defaultValue = "1") Long startId,
+            @RequestParam(defaultValue = "3200") Long endId,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "100") Integer size
     ) {
-        Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Order.asc("id")));
-        Page<Task> pageResult = taskRepository.findAll(pageRequest);
-        return pageResult.getContent();
+
+        Page<Task> items = taskService.getItemsInRange(startId, endId, page, size);
+        return items.getContent();
     }
 
     @GetMapping("/{id}")
